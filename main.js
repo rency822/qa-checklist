@@ -1,86 +1,92 @@
-function renderCheckboxes() {
-    const container = document.getElementById("checkboxContainer");
+let selectedIssues = [];
 
-    checkboxData.forEach(item => {
-        const label = document.createElement("label");
+function filterIssues() {
+    const query = document.getElementById("searchInput").value.toLowerCase();
+    const results = document.getElementById("searchResults");
 
-        label.innerHTML = `
-            <input type="checkbox" class="check-item" onchange="toggleInput(this)">
+    results.innerHTML = "";
+
+    if (!query) return;
+
+    issueData
+        .filter(item => item.label.toLowerCase().includes(query))
+        .forEach(item => {
+            const li = document.createElement("li");
+            li.textContent = item.label;
+            li.className = "issue-item";
+            li.onclick = () => addIssue(item);
+            results.appendChild(li);
+        });
+}
+
+function addIssue(item) {
+    // prevent duplicates
+    if (selectedIssues.find(i => i.label === item.label)) return;
+
+    selectedIssues.push({ ...item, link: "" });
+    document.getElementById("searchResults").innerHTML = "";
+    document.getElementById("searchInput").value = "";
+
+    renderSelected();
+}
+
+function renderSelected() {
+    const list = document.getElementById("selectedList");
+    list.innerHTML = "";
+
+    selectedIssues.forEach((item, index) => {
+        const li = document.createElement("li");
+
+        li.innerHTML = `
             ${item.label}
             ${item.hasInput ? `
                 <input type="text"
-                       class="extra-input"
+                       class="link-input"
                        placeholder="Link Code"
-                       style="display:none;">
+                       value="${item.link}"
+                       oninput="updateLink(${index}, this.value)">
             ` : ""}
+            <span class="remove-btn" onclick="removeIssue(${index})">X</span>
         `;
 
-        container.appendChild(label);
-        container.appendChild(document.createElement("br"));
+        list.appendChild(li);
     });
 }
 
-function toggleInput(checkbox) {
-    const extraInput = checkbox.parentElement.querySelector(".extra-input");
-    if (extraInput) {
-        extraInput.style.display = checkbox.checked ? "inline-block" : "none";
-        if (!checkbox.checked) extraInput.value = "";
-    }
+function updateLink(index, value) {
+    selectedIssues[index].link = value;
+}
+
+function removeIssue(index) {
+    selectedIssues.splice(index, 1);
+    renderSelected();
 }
 
 function generateOutput() {
     const sceneCode = document.getElementById("sceneCode").value.trim();
-    const outputLines = [];
 
-    document.querySelectorAll(".check-item").forEach(checkbox => {
-        if (checkbox.checked) {
-            let text = checkbox.parentElement.textContent.trim();
+    const lines = selectedIssues.map(item =>
+        `-${item.label}${item.link ? ` (${item.link})` : ""}`
+    );
 
-            const input = checkbox.parentElement.querySelector(".extra-input");
-            if (input && input.value.trim()) {
-                text += ` (${input.value.trim()})`;
-            }
+    const result =
+`${sceneCode || "N/A"}
+${lines.length ? lines.join("\n") : "No issues selected."}`;
 
-            outputLines.push(`-${text}`);
-        }
-    });
+    document.getElementById("output").textContent = result;
 
-const result =`${sceneCode || "N/A"}
-${outputLines.length ? outputLines.join("\n") : "No checklist items selected."}`;
-
-  const outputEl = document.getElementById("output");
-    outputEl.textContent = result;
-
-    // ✅ AUTO COPY TO CLIPBOARD
     navigator.clipboard.writeText(result).then(() => {
         document.getElementById("copyStatus").textContent =
             "Output copied to clipboard";
-    }).catch(() => {
-        document.getElementById("copyStatus").textContent =
-            "❌ Failed to copy";
     });
 }
-document.addEventListener("DOMContentLoaded", renderCheckboxes);
 
 function clearAll() {
-    // Clear scene code
     document.getElementById("sceneCode").value = "";
-
-    // Clear checkboxes and inputs
-    document.querySelectorAll(".check-item").forEach(checkbox => {
-        checkbox.checked = false;
-
-        const input = checkbox.parentElement.querySelector(".extra-input");
-        if (input) {
-            input.value = "";
-            input.style.display = "none";
-        }
-    });
-
-    // Clear output
+    document.getElementById("searchInput").value = "";
+    document.getElementById("searchResults").innerHTML = "";
     document.getElementById("output").textContent = "";
-
-    // Clear copy status
-    const status = document.getElementById("copyStatus");
-    if (status) status.textContent = "";
+    document.getElementById("copyStatus").textContent = "";
+    selectedIssues = [];
+    renderSelected();
 }

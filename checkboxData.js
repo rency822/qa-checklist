@@ -1,11 +1,11 @@
-const checkboxData = [
+const issueData = [
   { label: "GOOD", hasInput: true },
   { label: "Missing Large thumb", hasInput: true },
   { label: "Missing duration tag", hasInput: true },
   { label: "Missing model tag", hasInput: true },
   { label: "(_)was not tagged model tag", hasInput: true },
   { label: "Missing scene title", hasInput: true },
-  { label: "Missing audio right channel", hasInput: true },
+  { label: "Image () in the photopresentation is broken", hasInput: true },
   { label: "Missing category tag", hasInput: true },
   { label: "Missing audio right channel", hasInput: true }, 
   { label: "Missing audio left channel", hasInput: true },
@@ -18,6 +18,6 @@ const checkboxData = [
   { label: "Model drinking alcohol around ()", hasInput: true },
   { label: "Trailer not Playable", hasInput: true },
   { label: "Extra character in the scene description", hasInput: true },
-                
+  { label: "Trailer page not accessible", hasInput: true },
 
 ];

@@ -9,19 +9,31 @@
 </head>
 <body>
 
-<h2>Custom Checklist</h2>
+<h3>Scene Code:</h3> <input type="text" id="sceneCode"><br>
 
-<label>Scene Code:</label><br>
-<input type="text" id="sceneCode"><br><br>
+<h3>Add Issue:</h3>
+<input type="text" id="searchInput" placeholder="Search issue..." oninput="filterIssues()">
 
-<h3>Checklist Options</h3>
-<div id="checkboxContainer"></div><br>
+<ul id="searchResults"></ul>
+
+<h3>Selected Issues</h3>
+<ul id="selectedList"></ul>
+
 <button onclick="generateOutput()">Generate Output</button>
 <button onclick="clearAll()">Clear All</button>
+
 <p id="copyStatus" style="color: green;"></p>
 
 <h3>Output:</h3>
 <pre id="output"></pre>
+
+<style>
+ul { list-style: none; padding: 0; }
+li { margin-bottom: 6px; }
+.issue-item { cursor: pointer; color: #2b7cff; }
+.remove-btn { margin-left: 8px; color: red; cursor: pointer; }
+input.link-input { margin-left: 8px; }
+</style>
 
 
 <!-- IMPORTANT: data file FIRST -->
