@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <style>
+        body { font-family: Arial, sans-serif; }
+        .extra-input { margin-left: 8px; }
+        pre { background: #f4f4f4; padding: 10px; }
+    </style>
+</head>
+<body>
+
+<h2>Custom Checklist</h2>
+
+<label>Scene Code:</label><br>
+<input type="text" id="sceneCode"><br><br>
+
+<h3>Checklist Options</h3>
+<div id="checkboxContainer"></div><br>
+<button onclick="generateOutput()">Generate Output</button>
+<button onclick="clearAll()">Clear All</button>
+<p id="copyStatus" style="color: green;"></p>
+
+<h3>Output:</h3>
+<pre id="output"></pre>
+
+
+<!-- IMPORTANT: data file FIRST -->
+<script src="checkboxData.js"></script>
+<script src="main.js"></script>
+
+</body>
+</html>
