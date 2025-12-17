@@ -1,6 +1,6 @@
 const ISSUE_STORAGE_KEY = "editableIssues";
 let editableIssues = loadIssues();
-let compiledEntries = [];
+let compiledEntries = {}; // grouped by date
 
 function loadIssues() {
     const saved = localStorage.getItem(ISSUE_STORAGE_KEY);
@@ -89,20 +89,22 @@ function generateOutput() {
         `-${item.label}${item.link ? ` (${item.link})` : ""}`
     );
 
-    const entry =
-`${sceneDate}
-${sceneCode || "N/A"}
+      const sceneBlock =
+`${sceneCode || "N/A"}
 ${lines.length ? lines.join("\n") : "No issues selected."}`;
 
-    // store compiled entry
-    compiledEntries.push(entry);
+    // initialize date group if missing
+    if (!compiledEntries[sceneDate]) {
+        compiledEntries[sceneDate] = [];
+    }
 
-    // show latest entry
-    document.getElementById("output").textContent = entry;
+    compiledEntries[sceneDate].push(sceneBlock);
 
-    // show compiled output
-    document.getElementById("compiledOutput").textContent =
-        compiledEntries.join("\n\n---\n\n");
+    renderCompiledOutput();
+
+    // show latest scene
+    document.getElementById("output").textContent =
+        `${sceneDate}\n${sceneBlock}`;
 
     // auto copy compiled
     navigator.clipboard.writeText(
@@ -113,19 +115,25 @@ ${lines.length ? lines.join("\n") : "No issues selected."}`;
     });
 }
 
-function copyCompiled() {
-    const text = document.getElementById("compiledOutput").textContent;
-    if (!text) return;
+// compile renderer
+function renderCompiledOutput() {
+    const output = [];
 
-    navigator.clipboard.writeText(text).then(() => {
-        document.getElementById("copyStatus").textContent =
-            "All compiled output copied";
+    Object.keys(compiledEntries).forEach(date => {
+        output.push(
+`${date}
+----------------
+${compiledEntries[date].join("\n\n")}
+`);
+        output.push("================");
     });
+
+    document.getElementById("compiledOutput").textContent =
+        output.join("\n\n");
 }
 
-
-    // issue manager
-    function renderIssueManager() {
+// issue manager
+function renderIssueManager() {
     const list = document.getElementById("issueManager");
     list.innerHTML = "";
 
@@ -214,7 +222,7 @@ function clearAll() {
         new Date().toISOString().split("T")[0];
 
     selectedIssues = [];
-    compiledEntries = [];
+    compiledEntries = {};
 
     renderSelected();
 }
