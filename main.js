@@ -233,20 +233,43 @@ function saveIssues() {
     );
 }
 
-function clearAll() {
+// copy compiled output
+function copyCompiled() {
+    const compiledText =
+        document.getElementById("compiledOutput").textContent.trim();
+
+    if (!compiledText) {
+        alert("Nothing to copy.");
+        return;
+    }
+
+    navigator.clipboard.writeText(compiledText).then(() => {
+        document.getElementById("copyStatus").textContent =
+            "Compiled output copied to clipboard";
+    }).catch(err => {
+        console.error(err);
+        alert("Failed to copy compiled output");
+    });
+}
+
+function clearCompiled() {
+    if (!confirm("Clear all compiled output?")) return;
+
+    compiledEntries = {};
+    document.getElementById("compiledOutput").textContent = "";
+    document.getElementById("copyStatus").textContent = "";
+}
+
+function clearInputs() {
     document.getElementById("sceneCode").value = "";
     document.getElementById("searchInput").value = "";
     document.getElementById("searchResults").innerHTML = "";
     document.getElementById("output").textContent = "";
-    document.getElementById("compiledOutput").textContent = "";
     document.getElementById("copyStatus").textContent = "";
 
-    document.getElementById("sceneDate").value =
-        new Date().toISOString().split("T")[0];
+    // ⛔ date is NOT touched
 
     selectedIssues = [];
-    compiledEntries = {};
-
     renderSelected();
 }
 document.addEventListener("DOMContentLoaded", () => {
