@@ -81,37 +81,54 @@ function formatDateMMDDYYYY(dateValue) {
 
 // generate ouput
 function generateOutput() {
-    const sceneCode = document.getElementById("sceneCode").value.trim();
+const sceneCode = document.getElementById("sceneCode").value.trim() || "N/A";
     const sceneDateRaw = document.getElementById("sceneDate").value;
     const sceneDate = formatDateMMDDYYYY(sceneDateRaw);
 
-    const lines = selectedIssues.map(item =>
+    const newIssues = selectedIssues.map(item =>
         `-${item.label}${item.link ? ` (${item.link})` : ""}`
     );
 
-      const sceneBlock =
-`${sceneCode || "N/A"}
-${lines.length ? lines.join("\n") : "No issues selected."}`;
-
-    // initialize date group if missing
     if (!compiledEntries[sceneDate]) {
         compiledEntries[sceneDate] = [];
     }
 
-    compiledEntries[sceneDate].push(sceneBlock);
+    // 🔍 find existing scene
+    const existingIndex = compiledEntries[sceneDate].findIndex(
+        block => block.startsWith(sceneCode + "\n")
+    );
+
+    if (existingIndex !== -1) {
+        // update existing scene
+        const lines = compiledEntries[sceneDate][existingIndex].split("\n");
+        const existingIssues = new Set(lines.slice(1));
+
+        newIssues.forEach(issue => existingIssues.add(issue));
+
+        compiledEntries[sceneDate][existingIndex] =
+`${sceneCode}
+${[...existingIssues].join("\n")}`;
+    } else {
+        // ➕ new scene
+        compiledEntries[sceneDate].push(
+`${sceneCode}
+${newIssues.length ? newIssues.join("\n") : "No issues selected."}`
+        );
+    }
 
     renderCompiledOutput();
 
-    // show latest scene
+    // show latest update
     document.getElementById("output").textContent =
-        `${sceneDate}\n${sceneBlock}`;
+`${sceneDate}
+${compiledEntries[sceneDate].find(b => b.startsWith(sceneCode))}`;
 
-    // auto copy compiled
+    // auto-copy compiled
     navigator.clipboard.writeText(
         document.getElementById("compiledOutput").textContent
     ).then(() => {
         document.getElementById("copyStatus").textContent =
-            "Compiled output copied to clipboard";
+            "Compiled output updated & copied";
     });
 }
 
@@ -119,7 +136,13 @@ ${lines.length ? lines.join("\n") : "No issues selected."}`;
 function renderCompiledOutput() {
     const output = [];
 
-    Object.keys(compiledEntries).forEach(date => {
+Object.keys(compiledEntries)
+.sort((a, b) => {
+    const [am, ad, ay] = a.split("-").map(Number);
+    const [bm, bd, by] = b.split("-").map(Number);
+    return new Date(ay, am - 1, ad) - new Date(by, bm - 1, bd);
+})
+.forEach(date => {
         output.push(
 `${date}
 ----------------
@@ -226,8 +249,10 @@ function clearAll() {
 
     renderSelected();
 }
-document.addEventListener("DOMContentLoaded", () => {renderIssueManager();});
 document.addEventListener("DOMContentLoaded", () => {
-    const today = new Date().toISOString().split("T")[0];
-    document.getElementById("sceneDate").value = today;
+    renderIssueManager();
+    renderCompiledOutput();
+
+    document.getElementById("sceneDate").value =
+        new Date().toISOString().split("T")[0];
 });
