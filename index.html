@@ -11,6 +11,20 @@
 
 <h3>Scene Code:</h3> <input type="text" id="sceneCode"><br>
 
+<h3>
+    Manage Issues
+    <button onclick="toggleIssueManager()" id="toggleBtn">
+        Show
+    </button>
+</h3>
+
+<div id="issueManagerSection" style="display:none;">
+    <input type="text" id="newIssueInput" placeholder="New issue name">
+    <button onclick="addNewIssue()">Add</button><br>
+
+    <ul id="issueManager"></ul>
+</div>
+
 <h3>Add Issue:</h3>
 <input type="text" id="searchInput" placeholder="Search issue..." oninput="filterIssues()">
 
