@@ -70,7 +70,7 @@ function removeIssue(index) {
     renderSelected();
 }
 
-// date format
+// date format1
 function formatDateMMDDYYYY(dateValue) {
     if (!dateValue) return "No Date";
 
