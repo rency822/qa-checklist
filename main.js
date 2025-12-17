@@ -1,5 +1,6 @@
 const ISSUE_STORAGE_KEY = "editableIssues";
 let editableIssues = loadIssues();
+let compiledEntries = [];
 
 function loadIssues() {
     const saved = localStorage.getItem(ISSUE_STORAGE_KEY);
@@ -88,18 +89,40 @@ function generateOutput() {
         `-${item.label}${item.link ? ` (${item.link})` : ""}`
     );
 
-    const result =   
-`${sceneDate || "No Date"}
+    const entry =
+`${sceneDate}
 ${sceneCode || "N/A"}
 ${lines.length ? lines.join("\n") : "No issues selected."}`;
 
-    document.getElementById("output").textContent = result;
+    // store compiled entry
+    compiledEntries.push(entry);
 
-    navigator.clipboard.writeText(result).then(() => {
+    // show latest entry
+    document.getElementById("output").textContent = entry;
+
+    // show compiled output
+    document.getElementById("compiledOutput").textContent =
+        compiledEntries.join("\n\n---\n\n");
+
+    // auto copy compiled
+    navigator.clipboard.writeText(
+        document.getElementById("compiledOutput").textContent
+    ).then(() => {
         document.getElementById("copyStatus").textContent =
-            "Output copied to clipboard";
+            "Compiled output copied to clipboard";
     });
 }
+
+function copyCompiled() {
+    const text = document.getElementById("compiledOutput").textContent;
+    if (!text) return;
+
+    navigator.clipboard.writeText(text).then(() => {
+        document.getElementById("copyStatus").textContent =
+            "All compiled output copied";
+    });
+}
+
 
     // issue manager
     function renderIssueManager() {
@@ -184,10 +207,15 @@ function clearAll() {
     document.getElementById("searchInput").value = "";
     document.getElementById("searchResults").innerHTML = "";
     document.getElementById("output").textContent = "";
+    document.getElementById("compiledOutput").textContent = "";
     document.getElementById("copyStatus").textContent = "";
-    document.getElementById("sceneDate").value = new Date().toISOString().split("T")[0];
+
+    document.getElementById("sceneDate").value =
+        new Date().toISOString().split("T")[0];
 
     selectedIssues = [];
+    compiledEntries = [];
+
     renderSelected();
 }
 document.addEventListener("DOMContentLoaded", () => {renderIssueManager();});
