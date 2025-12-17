@@ -70,15 +70,27 @@ function removeIssue(index) {
     renderSelected();
 }
 
+// date format
+function formatDateMMDDYYYY(dateValue) {
+    if (!dateValue) return "No Date";
+
+    const [year, month, day] = dateValue.split("-");
+    return `${month}-${day}-${year}`;
+}
+
+// generate ouput
 function generateOutput() {
     const sceneCode = document.getElementById("sceneCode").value.trim();
+    const sceneDateRaw = document.getElementById("sceneDate").value;
+    const sceneDate = formatDateMMDDYYYY(sceneDateRaw);
 
     const lines = selectedIssues.map(item =>
         `-${item.label}${item.link ? ` (${item.link})` : ""}`
     );
 
-    const result =
-`${sceneCode || "N/A"}
+    const result =   
+`${sceneDate || "No Date"}
+${sceneCode || "N/A"}
 ${lines.length ? lines.join("\n") : "No issues selected."}`;
 
     document.getElementById("output").textContent = result;
@@ -88,6 +100,7 @@ ${lines.length ? lines.join("\n") : "No issues selected."}`;
             "Output copied to clipboard";
     });
 }
+
     // issue manager
     function renderIssueManager() {
     const list = document.getElementById("issueManager");
@@ -172,7 +185,13 @@ function clearAll() {
     document.getElementById("searchResults").innerHTML = "";
     document.getElementById("output").textContent = "";
     document.getElementById("copyStatus").textContent = "";
+    document.getElementById("sceneDate").value = new Date().toISOString().split("T")[0];
+
     selectedIssues = [];
     renderSelected();
 }
 document.addEventListener("DOMContentLoaded", () => {renderIssueManager();});
+document.addEventListener("DOMContentLoaded", () => {
+    const today = new Date().toISOString().split("T")[0];
+    document.getElementById("sceneDate").value = today;
+});
