@@ -37,6 +37,7 @@ function addIssue(item) {
     document.getElementById("searchInput").value = "";
 
     renderSelected();
+    updateGenerateButton();
 }
 
 function renderSelected() {
@@ -69,6 +70,7 @@ function updateLink(index, value) {
 function removeIssue(index) {
     selectedIssues.splice(index, 1);
     renderSelected();
+    updateGenerateButton(); 
 }
 
 // date format1
@@ -153,6 +155,16 @@ ${compiledEntries[date].join("\n\n")}
 
     document.getElementById("compiledOutput").textContent =
         output.join("\n\n");
+}
+
+function updateGenerateButton() {
+    const btn = document.getElementById("generateBtn");
+    if (!btn) return;
+    btn.disabled = selectedIssues.length === 0;
+    btn.title = btn.disabled
+        ? "Select at least one issue to generate output"
+        : "";
+        
 }
 
 // issue manager
@@ -271,10 +283,12 @@ function clearInputs() {
 
     selectedIssues = [];
     renderSelected();
+    updateGenerateButton(); 
 }
 document.addEventListener("DOMContentLoaded", () => {
     renderIssueManager();
     renderCompiledOutput();
+    updateGenerateButton();
 
     document.getElementById("sceneDate").value =
         new Date().toISOString().split("T")[0];
