@@ -154,7 +154,7 @@ ${compiledEntries[date].join("\n\n")}
             output.push("================");
         });
 
-    document.getElementById("compiledOutput").value =
+    document.getElementById("compiledOutput").textContent =
         output.join("\n\n");
 }
 
@@ -335,15 +335,16 @@ function importIssues(event) {
 
 // copy compiled output
 function copyCompiled() {
-    const compiledText =
-        document.getElementById("compiledOutput").textContent.trim();
-
-    if (!compiledText) {
+          const el = document.getElementById("compiledOutput");
+          const text = el.textContent.trim();
+    
+            
+    if (!text) {
         alert("Nothing to copy.");
         return;
     }
 
-    navigator.clipboard.writeText(compiledText).then(() => {
+    navigator.clipboard.writeText(text).then(() => {
         document.getElementById("copyStatus").textContent =
             "Compiled output copied to clipboard";
     }).catch(err => {
@@ -357,6 +358,7 @@ function clearCompiled() {
 
     compiledEntries = {};
     document.getElementById("compiledOutput").textContent = "";
+    document.getElementById("output").textContent = "";
     document.getElementById("copyStatus").textContent = "";
 }
 
