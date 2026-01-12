@@ -138,23 +138,36 @@ ${compiledEntries[sceneDate].find(b => b.startsWith(sceneCode))}`;
 function renderCompiledOutput() {
     const output = [];
 
-Object.keys(compiledEntries)
-.sort((a, b) => {
-    const [am, ad, ay] = a.split("-").map(Number);
-    const [bm, bd, by] = b.split("-").map(Number);
-    return new Date(ay, am - 1, ad) - new Date(by, bm - 1, bd);
-})
-.forEach(date => {
-        output.push(
+    Object.keys(compiledEntries)
+        .sort((a, b) => {
+            const [am, ad, ay] = a.split("-").map(Number);
+            const [bm, bd, by] = b.split("-").map(Number);
+            return new Date(ay, am - 1, ad) - new Date(by, bm - 1, bd);
+        })
+        .forEach(date => {
+            output.push(
 `${date}
 ----------------
 ${compiledEntries[date].join("\n\n")}
-`);
-        output.push("================");
-    });
+`
+            );
+            output.push("================");
+        });
 
-    document.getElementById("compiledOutput").textContent =
+    document.getElementById("compiledOutput").value =
         output.join("\n\n");
+}
+
+function saveEditedCompiled() {
+    const text = document.getElementById("compiledOutput").value;
+
+    if (!text.trim()) return;
+
+    // store raw edited version
+    compiledEntries = { "EDITED": [text] };
+
+    saveCompiled();
+    alert("Compiled output saved");
 }
 
 function updateGenerateButton() {
@@ -243,6 +256,81 @@ function saveIssues() {
         ISSUE_STORAGE_KEY,
         JSON.stringify(editableIssues)
     );
+}
+
+// export issues to JSON
+function exportIssues() {
+    const data = JSON.stringify(editableIssues, null, 2);
+
+    const blob = new Blob([data], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "issues-backup.json";
+    a.click();
+
+    URL.revokeObjectURL(url);
+}
+
+function importIssues(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = e => {
+        try {
+            const imported = JSON.parse(e.target.result);
+
+            if (!Array.isArray(imported)) {
+                alert("Invalid file format");
+                return;
+            }
+
+            // validate structure
+            const valid = imported.every(
+                item => typeof item.label === "string"
+            );
+
+            if (!valid) {
+                alert("Invalid issue data");
+                return;
+            }
+
+            const replace = confirm(
+                "Replace existing issues?\n\nOK = Replace\nCancel = Merge"
+            );
+
+            if (replace) {
+                editableIssues = imported;
+            } else {
+                // merge (avoid duplicates)
+                const existingLabels =
+                    new Set(editableIssues.map(i => i.label));
+
+                imported.forEach(item => {
+                    if (!existingLabels.has(item.label)) {
+                        editableIssues.push(item);
+                    }
+                });
+            }
+
+            saveIssues();
+            renderIssueManager();
+            filterIssues();
+
+            alert("Issues imported successfully!");
+
+        } catch (err) {
+            alert("Failed to import file");
+        }
+
+        // reset input so same file can be reselected
+        event.target.value = "";
+    };
+
+    reader.readAsText(file);
 }
 
 // copy compiled output

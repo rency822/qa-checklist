@@ -19,7 +19,12 @@
     <button onclick="toggleIssueManager()" id="toggleBtn">
         Show
     </button>
+    <button onclick="exportIssues()">Export Issues</button>
 </h3>
+<label>
+    Import Issues:
+    <input type="file" id="importIssuesInput" accept=".json" onchange="importIssues(event)">
+</label><br><br>
 
 <div id="issueManagerSection" style="display:none;">
     <input type="text" id="newIssueInput" placeholder="New issue name">
@@ -54,10 +59,11 @@ input.link-input { margin-left: 8px; }
 </style>
 
 <h3>Compiled Output:</h3>
-<pre id="compiledOutput"></pre>
+<textarea id="compiledOutput" rows="20" style="width: 100%;"></textarea><br>
 
 <button onclick="copyCompiled()">Copy All</button>
 <button onclick="clearCompiled()">Clear Compiled</button>
+<button onclick="saveEditedCompiled()">Save Edited Output</button>
 
 <!-- IMPORTANT: data file FIRST -->
 <script src="checkboxData.js"></script>
