@@ -11,26 +11,31 @@
 
 <h3>Date:</h3>
 <input type="date" id="sceneDate">
+
+<h3>Type:</h3>
+<button onclick="setType('SCENES')" id="sceneBtn">SCENES</button>
+<button onclick="setType('TRAILER')" id="trailerBtn">TRAILER</button>
+
 <h3>Scene Code:</h3>
 <input type="text" id="sceneCode">
 
-<h3>
-    Manage Issues
+<h3> Manage Issues
     <button onclick="toggleIssueManager()" id="toggleBtn">
         Show
     </button>
-    <button onclick="exportIssues()">Export Issues</button>
+   
 </h3>
-<label>
-    Import Issues:
-    <input type="file" id="importIssuesInput" accept=".json" onchange="importIssues(event)">
-</label><br><br>
 
 <div id="issueManagerSection" style="display:none;">
     <input type="text" id="newIssueInput" placeholder="New issue name">
-    <button onclick="addNewIssue()">Add</button><br>
+    <button onclick="addNewIssue()">Add</button><br><br>
 
     <ul id="issueManager"></ul>
+     <button onclick="exportIssues()">Export Issues</button><br><br>
+    <label>
+    Import Issues:
+    <input type="file" id="importIssuesInput" accept=".json" onchange="importIssues(event)">
+</label>
 </div>
 
 <h3>Add Issue:</h3>
@@ -58,12 +63,15 @@ li { margin-bottom: 6px; }
 input.link-input { margin-left: 8px; }
 </style>
 
-<h3>Compiled Output:</h3>
-<textarea id="compiledOutput" rows="20" style="width: 100%;"></textarea><br>
+<h3>Compiled Output – SCENES</h3>
+<textarea id="compiledScenes" rows="15" style="width:100%;"></textarea>
+<button onclick="copyCompiled('SCENES')">Copy Scenes</button>
+<button onclick="clearCompiled('SCENES')">Clear Scenes</button>
 
-<button onclick="copyCompiled()">Copy All</button>
-<button onclick="clearCompiled()">Clear Compiled</button>
-<button onclick="saveEditedCompiled()">Save Edited Output</button>
+<h3>Compiled Output – TRAILER</h3>
+<textarea id="compiledTrailers" rows="15" style="width:100%;"></textarea>
+<button onclick="copyCompiled('TRAILER')">Copy Trailer</button>
+<button onclick="clearCompiled('TRAILER')">Clear Trailer</button>
 
 <!-- IMPORTANT: data file FIRST -->
 <script src="checkboxData.js"></script>

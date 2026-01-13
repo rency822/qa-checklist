@@ -1,6 +1,10 @@
 const ISSUE_STORAGE_KEY = "editableIssues";
 let editableIssues = loadIssues();
-let compiledEntries = loadCompiled(); // grouped by date
+let compiledEntries = loadCompiled();
+let activeType = "SCENES";
+
+
+
 
 function loadIssues() {
     const saved = localStorage.getItem(ISSUE_STORAGE_KEY);
@@ -9,10 +13,22 @@ function loadIssues() {
 
 function loadCompiled() {
     const saved = localStorage.getItem("compiledEntries");
-    return saved ? JSON.parse(saved) : {};
+    const data = saved ? JSON.parse(saved) : {};
+
+    return {
+        SCENES: data.SCENES || {},
+        TRAILER: data.TRAILER || {}
+    };
 }
 
+
 let selectedIssues = [];
+
+function setType(type) {
+    activeType = type;
+    document.getElementById("sceneBtn").disabled = type === "SCENES";
+    document.getElementById("trailerBtn").disabled = type === "TRAILER";
+}
 
 function updateGenerateButton() {
     const btn = document.getElementById("generateBtn");
@@ -97,32 +113,37 @@ function generateOutput() {
     const sceneDateRaw = document.getElementById("sceneDate").value;
     const sceneDate = formatDateMMDDYYYY(sceneDateRaw);
 
+// 🔒 SAFETY INIT
+if (!compiledEntries[activeType]) {
+    compiledEntries[activeType] = {};
+}
+
     const newIssues = selectedIssues.map(item =>
         `-${item.label}${item.link ? ` (${item.link})` : ""}`
     );
 
-    if (!compiledEntries[sceneDate]) {
-        compiledEntries[sceneDate] = [];
+    if (!compiledEntries[activeType][sceneDate]) {
+    compiledEntries[activeType][sceneDate] = [];
     }
 
     // 🔍 find existing scene
-    const existingIndex = compiledEntries[sceneDate].findIndex(
+    const existingIndex = compiledEntries[activeType][sceneDate].findIndex(
         block => block.startsWith(sceneCode + "\n")
     );
 
     if (existingIndex !== -1) {
         // update existing scene
-        const lines = compiledEntries[sceneDate][existingIndex].split("\n");
+        const lines = compiledEntries[activeType][sceneDate][existingIndex].split("\n");
         const existingIssues = new Set(lines.slice(1));
 
         newIssues.forEach(issue => existingIssues.add(issue));
 
-        compiledEntries[sceneDate][existingIndex] =
+        compiledEntries[activeType][sceneDate][existingIndex] =
 `${sceneCode}
 ${[...existingIssues].join("\n")}`;
     } else {
         // ➕ new scene
-        compiledEntries[sceneDate].push(
+        compiledEntries[activeType][sceneDate].push(
 `${sceneCode}
 ${newIssues.length ? newIssues.join("\n") : "No issues selected."}`
         );
@@ -134,22 +155,21 @@ ${newIssues.length ? newIssues.join("\n") : "No issues selected."}`
     // show latest update
     document.getElementById("output").textContent =
 `${sceneDate}
-${compiledEntries[sceneDate].find(b => b.startsWith(sceneCode))}`;
+${compiledEntries[activeType][sceneDate].find(b => b.startsWith(sceneCode))}`;
 
-    // auto-copy compiled
-    navigator.clipboard.writeText(
-        document.getElementById("compiledOutput").value
-    ).then(() => {
-        document.getElementById("copyStatus").textContent =
-            "Compiled output updated & copied";
-    });
 }
 
 // compile renderer
 function renderCompiledOutput() {
-    const output = [];
+    renderByType("SCENES", "compiledScenes");
+    renderByType("TRAILER", "compiledTrailers");
+}
 
-    Object.keys(compiledEntries)
+function renderByType(type, textareaId) {
+    const output = [];
+    const data = compiledEntries[type] || {};
+
+    Object.keys(data)
         .sort((a, b) => {
             const [am, ad, ay] = a.split("-").map(Number);
             const [bm, bd, by] = b.split("-").map(Number);
@@ -159,28 +179,15 @@ function renderCompiledOutput() {
             output.push(
 `${date}
 ----------------
-${compiledEntries[date].join("\n\n")}
+${data[date].join("\n\n")}
 `
             );
             output.push("================");
         });
 
-    document.getElementById("compiledOutput").value =
-        output.join("\n\n");
+    document.getElementById(textareaId).value = output.join("\n\n");
 }
 
-function saveEditedCompiled() {
-    const el = document.getElementById("compiledOutput");
-    const text = el.value.trim();
-
-    if (!text) return;
-
-    // store raw edited version without overwriting existing entries
-    compiledEntries["EDITED"] = [text];
-
-    saveCompiled();
-    alert("Compiled output saved");
-}
 
 // issue manager
 function renderIssueManager() {
@@ -351,33 +358,25 @@ function importIssues(event) {
 }
 
 // copy compiled output
-function copyCompiled() {
-    const el = document.getElementById("compiledOutput");
-    const text = el.value.trim();
+function copyCompiled(type) {
+    const el = document.getElementById(
+        type === "SCENES" ? "compiledScenes" : "compiledTrailers"
+    );
 
-    if (!text) {
-        alert("Nothing to copy.");
-        return;
-    }
+    if (!el.value.trim()) return alert("Nothing to copy");
 
-    navigator.clipboard.writeText(text).then(() => {
-        document.getElementById("copyStatus").textContent =
-            "Compiled output copied to clipboard";
-    }).catch(err => {
-        console.error(err);
-        alert("Failed to copy compiled output");
-    });
+    navigator.clipboard.writeText(el.value);
 }
 
-function clearCompiled() {
-    if (!confirm("Clear all compiled output?")) return;
 
-    compiledEntries = {};
-    document.getElementById("compiledOutput").value = "";
-    document.getElementById("output").textContent = "";
-    document.getElementById("copyStatus").textContent = "";
+function clearCompiled(type) {
+    if (!confirm(`Clear all ${type} compiled output?`)) return;
+
+    compiledEntries[type] = {};
     saveCompiled();
+    renderCompiledOutput();
 }
+
 
 function clearInputs() {
     document.getElementById("sceneCode").value = "";
