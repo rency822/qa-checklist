@@ -1,12 +1,23 @@
 const ISSUE_STORAGE_KEY = "editableIssues";
 let editableIssues = loadIssues();
-let compiledEntries = {}; // grouped by date
+let compiledEntries = loadCompiled(); // grouped by date
 
 function loadIssues() {
     const saved = localStorage.getItem(ISSUE_STORAGE_KEY);
     return saved ? JSON.parse(saved) : [...issueData];
 }
+
+function loadCompiled() {
+    const saved = localStorage.getItem("compiledEntries");
+    return saved ? JSON.parse(saved) : {};
+}
+
 let selectedIssues = [];
+
+function updateGenerateButton() {
+    const btn = document.getElementById("generateBtn");
+    btn.disabled = selectedIssues.length === 0;
+}
 
 function filterIssues() {
     const query = document.getElementById("searchInput").value.toLowerCase();
@@ -25,7 +36,6 @@ function filterIssues() {
         li.onclick = () => addIssue(item);
         results.appendChild(li);
     });
-
 }
 
 function addIssue(item) {
@@ -83,7 +93,7 @@ function formatDateMMDDYYYY(dateValue) {
 
 // generate ouput
 function generateOutput() {
-const sceneCode = document.getElementById("sceneCode").value.trim() || "N/A";
+    const sceneCode = document.getElementById("sceneCode").value.trim() || "N/A";
     const sceneDateRaw = document.getElementById("sceneDate").value;
     const sceneDate = formatDateMMDDYYYY(sceneDateRaw);
 
@@ -119,6 +129,7 @@ ${newIssues.length ? newIssues.join("\n") : "No issues selected."}`
     }
 
     renderCompiledOutput();
+    saveCompiled();
 
     // show latest update
     document.getElementById("output").textContent =
@@ -127,7 +138,7 @@ ${compiledEntries[sceneDate].find(b => b.startsWith(sceneCode))}`;
 
     // auto-copy compiled
     navigator.clipboard.writeText(
-        document.getElementById("compiledOutput").textContent
+        document.getElementById("compiledOutput").value
     ).then(() => {
         document.getElementById("copyStatus").textContent =
             "Compiled output updated & copied";
@@ -154,30 +165,21 @@ ${compiledEntries[date].join("\n\n")}
             output.push("================");
         });
 
-    document.getElementById("compiledOutput").textContent =
+    document.getElementById("compiledOutput").value =
         output.join("\n\n");
 }
 
 function saveEditedCompiled() {
-    const text = document.getElementById("compiledOutput").value;
+    const el = document.getElementById("compiledOutput");
+    const text = el.value.trim();
 
-    if (!text.trim()) return;
+    if (!text) return;
 
-    // store raw edited version
-    compiledEntries = { "EDITED": [text] };
+    // store raw edited version without overwriting existing entries
+    compiledEntries["EDITED"] = [text];
 
     saveCompiled();
     alert("Compiled output saved");
-}
-
-function updateGenerateButton() {
-    const btn = document.getElementById("generateBtn");
-    if (!btn) return;
-    btn.disabled = selectedIssues.length === 0;
-    btn.title = btn.disabled
-        ? "Select at least one issue to generate output"
-        : "";
-        
 }
 
 // issue manager
@@ -197,7 +199,6 @@ function renderIssueManager() {
 
         list.appendChild(li);
     });
-    
 }
 
 let issueManagerVisible = false;
@@ -217,12 +218,20 @@ function toggleIssueManager() {
     }
 }
 
-
 // add new Issue
 function addNewIssue() {
     const input = document.getElementById("newIssueInput");
     const value = input.value.trim();
-    if (!value) return;
+
+    if (!value) {
+        alert("Please enter an issue name");
+        return;
+    }
+
+    if (editableIssues.some(item => item.label === value)) {
+        alert("This issue already exists");
+        return;
+    }
 
     editableIssues.push({ label: value, hasInput: true });
     input.value = "";
@@ -234,7 +243,7 @@ function addNewIssue() {
 // edit issue
 function editIssue(index, newLabel) {
     editableIssues[index].label = newLabel;
-     saveIssues();
+    saveIssues();
 }
 
 // delete issue
@@ -248,6 +257,7 @@ function deleteIssue(index) {
     saveIssues();
     renderIssueManager();
     renderSelected();
+    updateGenerateButton();
 }
 
 // save function
@@ -255,6 +265,13 @@ function saveIssues() {
     localStorage.setItem(
         ISSUE_STORAGE_KEY,
         JSON.stringify(editableIssues)
+    );
+}
+
+function saveCompiled() {
+    localStorage.setItem(
+        "compiledEntries",
+        JSON.stringify(compiledEntries)
     );
 }
 
@@ -335,10 +352,9 @@ function importIssues(event) {
 
 // copy compiled output
 function copyCompiled() {
-          const el = document.getElementById("compiledOutput");
-          const text = el.textContent.trim();
-    
-            
+    const el = document.getElementById("compiledOutput");
+    const text = el.value.trim();
+
     if (!text) {
         alert("Nothing to copy.");
         return;
@@ -357,9 +373,10 @@ function clearCompiled() {
     if (!confirm("Clear all compiled output?")) return;
 
     compiledEntries = {};
-    document.getElementById("compiledOutput").textContent = "";
+    document.getElementById("compiledOutput").value = "";
     document.getElementById("output").textContent = "";
     document.getElementById("copyStatus").textContent = "";
+    saveCompiled();
 }
 
 function clearInputs() {
@@ -375,6 +392,7 @@ function clearInputs() {
     renderSelected();
     updateGenerateButton(); 
 }
+
 document.addEventListener("DOMContentLoaded", () => {
     renderIssueManager();
     renderCompiledOutput();
