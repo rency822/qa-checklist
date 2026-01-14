@@ -392,6 +392,69 @@ function clearInputs() {
     updateGenerateButton(); 
 }
 
+// export all compiled output
+function exportAllCompiled() {
+  const today = new Date();
+
+const formattedDate = today.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric"
+});
+
+const title = prompt(
+    "Enter export title:",
+    `Due for ${formattedDate} - title`
+);
+
+if (!title) return;
+
+
+    let output = `${title}\n\n`;
+
+    // ---------- SCENES ----------
+    output += "*SCENE*\n\n";
+    output += buildExportBlock("SCENES");
+
+    // ---------- TRAILER ----------
+    output += "\n*TRAILER*\n\n";
+    output += buildExportBlock("TRAILER");
+
+    const blob = new Blob([output], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "qa_compiled_export.txt";
+    a.click();
+
+    URL.revokeObjectURL(url);
+}
+
+function buildExportBlock(type) {
+    const data = compiledEntries[type] || {};
+    let result = "";
+
+    Object.keys(data)
+        .sort((a, b) => {
+            const [am, ad, ay] = a.split("-").map(Number);
+            const [bm, bd, by] = b.split("-").map(Number);
+            return new Date(ay, am - 1, ad) - new Date(by, bm - 1, bd);
+        })
+        .forEach(date => {
+            result +=
+`${date}
+----------------
+${data[date].join("\n\n")}
+
+================
+
+`;
+        });
+
+    return result.trimEnd();
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     renderIssueManager();
     renderCompiledOutput();
