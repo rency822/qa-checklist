@@ -66,18 +66,16 @@ input.link-input { margin-left: 8px; }
 
 <div id="compiledScenesSection">
     <h3>Compiled Output – SCENES</h3>
-    <textarea id="compiledScenes" rows="15" style="width:100%;"></textarea><br>
+    <textarea id="compiledScenes"oninput="autoSaveEdited('SCENES')" rows="15" style="width:100%;"></textarea><br>
     <button onclick="copyCompiled('SCENES')">Copy Scenes</button>
     <button onclick="clearCompiled('SCENES')">Clear Scenes</button>
-    <button onclick="saveEditedCompiled('SCENES')">Save Edited Scenes</button>
 </div>
 
 <div id="compiledTrailersSection" style="display:none;">
     <h3>Compiled Output – TRAILER</h3>
-    <textarea id="compiledTrailers" rows="15" style="width:100%;"></textarea><br>
+    <textarea id="compiledTrailers" oninput="autoSaveEdited('TRAILER')" rows="15" style="width:100%;"></textarea><br>
     <button onclick="copyCompiled('TRAILER')">Copy Trailer</button>
     <button onclick="clearCompiled('TRAILER')">Clear Trailer</button>
-    <button onclick="saveEditedCompiled('TRAILER')">Save Edited Trailer</button>
 </div>
 
 

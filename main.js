@@ -404,6 +404,7 @@ function clearInputs() {
 
 // export all compiled output
 function exportAllCompiled() {
+
   const today = new Date();
 
 const formattedDate = today.toLocaleDateString("en-US", {
@@ -465,6 +466,70 @@ ${data[date].join("\n\n")}
         });
 
     return result.trimEnd();
+}
+let autoSaveTimer = null;
+
+function autoSaveEdited(type) {
+    clearTimeout(autoSaveTimer);
+
+    autoSaveTimer = setTimeout(() => {
+        mergeEditedCompiled(type);
+    }, 500); // 0.5s debounce
+}
+
+function mergeEditedCompiled(type) {
+    const textareaId =
+        type === "SCENES" ? "compiledScenes" : "compiledTrailers";
+
+    const el = document.getElementById(textareaId);
+    if (!el) return;
+
+    const raw = el.value.trim();
+    if (!raw) {
+        compiledEntries[type] = {};
+        saveCompiled();
+        return;
+    }
+
+    const lines = raw.split("\n");
+    let currentDate = null;
+    let currentBlocks = [];
+
+    compiledEntries[type] = {};
+
+    lines.forEach(line => {
+        line = line.trim();
+
+        // date header MM-DD-YYYY
+        if (/^\d{2}-\d{2}-\d{4}$/.test(line)) {
+            if (currentDate && currentBlocks.length) {
+                compiledEntries[type][currentDate] = currentBlocks.slice();
+            }
+            currentDate = line;
+            currentBlocks = [];
+            return;
+        }
+
+        // ignore separators / empty
+        if (
+            !line ||
+            line.startsWith("---") ||
+            line.startsWith("===")
+        ) return;
+
+        // scene code
+        if (!line.startsWith("-")) {
+            currentBlocks.push(line);
+        } else if (currentBlocks.length) {
+            currentBlocks[currentBlocks.length - 1] += "\n" + line;
+        }
+    });
+
+    if (currentDate && currentBlocks.length) {
+        compiledEntries[type][currentDate] = currentBlocks.slice();
+    }
+
+    saveCompiled();
 }
 
 document.addEventListener("DOMContentLoaded", () => {
