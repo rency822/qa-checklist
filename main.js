@@ -415,7 +415,7 @@ const formattedDate = today.toLocaleDateString("en-US", {
 
 const title = prompt(
     "Enter export title:",
-    `Due for ${formattedDate} - title`
+    `Due for ${formattedDate}`
 );
 
 if (!title) return;
