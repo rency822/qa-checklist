@@ -26,9 +26,19 @@ let selectedIssues = [];
 
 function setType(type) {
     activeType = type;
+
+    const scenes = document.getElementById("compiledScenesSection");
+    const trailers = document.getElementById("compiledTrailersSection");
+
+    scenes.style.display = type === "SCENES" ? "block" : "none";
+    trailers.style.display = type === "TRAILER" ? "block" : "none";
+
     document.getElementById("sceneBtn").disabled = type === "SCENES";
     document.getElementById("trailerBtn").disabled = type === "TRAILER";
+
+    renderCompiledOutput();
 }
+
 
 function updateGenerateButton() {
     const btn = document.getElementById("generateBtn");
@@ -415,6 +425,8 @@ if (!title) return;
     // ---------- SCENES ----------
     output += "*SCENE*\n\n";
     output += buildExportBlock("SCENES");
+
+    output += "\n\n \n\n";
 
     // ---------- TRAILER ----------
     output += "\n*TRAILER*\n\n";
