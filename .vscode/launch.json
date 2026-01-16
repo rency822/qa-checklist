@@ -6,7 +6,12 @@
       "type": "pwa-chrome",
       "request": "launch",
       "url": "http://localhost:5500/index.html",
-      "webRoot": "${workspaceFolder}"
-    }
+      "webRoot": "${workspaceFolder}",
+      "runtimeArgs": [
+    "--remote-debugging-port=9223",
+    "--incognito"
+],
+    } 
   ]
+  
 }

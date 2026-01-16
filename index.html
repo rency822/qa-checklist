@@ -9,6 +9,29 @@
 </head>
 <body>
 
+<label style="display:block; margin:10px 0;">
+    <input type="checkbox" id="stageToggle" onchange="toggleStageMode()">
+    Edit Scene Intake (Stage 0)
+</label>
+
+<h2>Stage 0 – Scene Intake</h2>
+
+<div style="background: #f4f4f4; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
+    <label>Set Date for Batch:</label>
+    <input type="date" id="bulkStage0Date" style="margin-bottom:10px;"><br>
+    
+    <textarea id="stage0Input" rows="5" style="width:100%;" placeholder="Paste codes here..."></textarea><br>
+    <button onclick="stage0AddBulk()">Add Batch</button>
+</div>
+
+<h3>Intake Queue (Grouped by Date)</h3>
+<div id="stage0List"></div>
+
+<hr>
+
+ <!-- QA CONTENT -->
+<div id="qaSection" style="display:none;">
+
 <h3>Date:</h3>
 <input type="date" id="sceneDate">
 
@@ -77,12 +100,15 @@ input.link-input { margin-left: 8px; }
     <button onclick="copyCompiled('TRAILER')">Copy Trailer</button>
     <button onclick="clearCompiled('TRAILER')">Clear Trailer</button>
 </div>
-
+</div> 
 
 
 <!-- IMPORTANT: data file FIRST -->
+<script src="utils.js"></script>
 <script src="checkboxData.js"></script>
+<script src="stage0.js"></script>
 <script src="main.js"></script>
+
 
 </body>
 </html>

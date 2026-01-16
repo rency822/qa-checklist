@@ -2,9 +2,7 @@ const ISSUE_STORAGE_KEY = "editableIssues";
 let editableIssues = loadIssues();
 let compiledEntries = loadCompiled();
 let activeType = "SCENES";
-
-
-
+let stage0EditMode = false;
 
 function loadIssues() {
     const saved = localStorage.getItem(ISSUE_STORAGE_KEY);
@@ -19,6 +17,56 @@ function loadCompiled() {
         SCENES: data.SCENES || {},
         TRAILER: data.TRAILER || {}
     };
+}
+
+function updateStageVisibility() {
+    const qa = document.getElementById("qaSection");
+    const toggle = document.getElementById("stageToggle");
+
+    const complete = isStage0Complete();
+
+    if (!complete || stage0EditMode) {
+        qa.style.display = "none";
+        toggle.checked = true;
+    } else {
+        qa.style.display = "block";
+        toggle.checked = false;
+    }
+}
+
+function loadSceneToQA(code) {
+    const data = stage0Scenes[code];
+    if (!data) return;
+
+    // 1. Set the Scene Code
+    document.getElementById("sceneCode").value = code;
+    
+    // 2. Set the Date (Convert MM-DD-YYYY back to YYYY-MM-DD for input)
+    if (data.date) {
+        const [m, d, y] = data.date.split("-");
+        document.getElementById("sceneDate").value = `${y}-${m}-${d}`;
+    }
+    
+    // 3. Set the Type based on Trailer checkbox
+    setType(data.hasTrailer ? "TRAILER" : "SCENES");
+
+    // 4. Close Intake mode to show QA section
+    stage0EditMode = false;
+    document.getElementById("stageToggle").checked = false;
+    updateStageVisibility();
+    
+    // 5. Scroll up so you see the QA inputs
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // Optional: Clear previous selected issues for the new scene
+    selectedIssues = [];
+    renderSelected();
+    updateGenerateButton();
+}
+
+function toggleStageMode() {
+    stage0EditMode = document.getElementById("stageToggle").checked;
+    updateStageVisibility();
 }
 
 
@@ -533,9 +581,13 @@ function mergeEditedCompiled(type) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+    if (typeof renderStage0 === "function") {
+        renderStage0();
+    }
     renderIssueManager();
     renderCompiledOutput();
     updateGenerateButton();
+    updateStageVisibility();
 
     document.getElementById("sceneDate").value =
         new Date().toISOString().split("T")[0];
