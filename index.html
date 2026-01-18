@@ -1,114 +1,112 @@
 <!DOCTYPE html>
 <html>
 <head>
-   <style>
-        body { font-family: Arial, sans-serif; }
-        .extra-input { margin-left: 8px; }
-        pre { background: #f4f4f4; padding: 10px; }
-    </style>
+   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<label style="display:block; margin:10px 0;">
-    <input type="checkbox" id="stageToggle" onchange="toggleStageMode()">
-    Edit Scene Intake (Stage 0)
-</label>
+<div id="workflowNav">
+    <span id="step0" class="step">1. Intake</span>
+    <span id="step1" class="step">2. QA Scenes</span>
+    <span id="step2" class="step">3. QA Trailers</span>
+    <span id="step3" class="step">4. Export</span>
+    <button onclick="nextStage()" id="nextStepBtn" class="btn-primary">Next Step →</button>
+</div>
 
-<h2>Stage 0 – Scene Intake</h2>
+<div id="stage0Section" class="workflow-section">
+    <h2>Stage 0 – Scene Intake</h2>
+    <div class="glass-panel">
+        <label>Set Date for Batch:</label>
+        <input type="date" id="bulkStage0Date" style="margin-bottom: 10px;">
+        <br>
+        <textarea id="stage0Input" rows="5" placeholder="Paste codes here..."></textarea>
+        <br><br>
+        <button onclick="stage0AddBulk()" class="btn-primary">Add Batch</button>
+    </div>
+    <div id="stage0List"></div>
+</div>
 
-<div style="background: #f4f4f4; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
-    <label>Set Date for Batch:</label>
-    <input type="date" id="bulkStage0Date" style="margin-bottom:10px;"><br>
+<div id="qaSection" class="workflow-section hidden">
+    <h2 id="qaHeader">QA Mode</h2>
     
-    <textarea id="stage0Input" rows="5" style="width:100%;" placeholder="Paste codes here..."></textarea><br>
-    <button onclick="stage0AddBulk()">Add Batch</button>
+    <div class="flex-row">
+        <div class="col-1">
+            <h3>Current Queue</h3>
+            <div id="queueList"></div>
+        </div>
+
+        <div class="col-2">
+            <div class="glass-panel">
+                <strong>Active Code:</strong> 
+                <span id="activeCodeDisplay" class="code-font">None</span>
+                <input type="hidden" id="sceneCode">
+                <input type="hidden" id="sceneDate">
+            </div>
+            
+            <h3>Add Issue:</h3>
+            <input type="text" id="searchInput" placeholder="Search issue..." oninput="filterIssues()">
+            <ul id="searchResults"></ul>
+            
+            <h3>Selected Issues</h3>
+            <ul id="selectedList"></ul>
+            
+            <button id="generateBtn" onclick="generateOutput()" class="btn-primary" disabled>Generate Output</button>
+            <button onclick="clearInputs()" class="btn-secondary">Clear</button>
+
+            <div style="margin-top: 20px; border-top: 1px solid #444; padding-top: 15px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3>Issue Database</h3>
+                    <button id="toggleBtn" onclick="toggleIssueManager()" class="btn-secondary" style="padding:5px 10px;">Show Manager</button>
+                </div>
+
+                <div id="issueManagerSection" class="issue-manager-panel hidden">
+                    <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #444;">
+                        <button onclick="exportIssues()" class="btn-secondary">⬇ Export Backup</button>
+                        <input type="file" id="importFile" class="hidden" onchange="importIssues(event)" accept=".json">
+                        <button onclick="document.getElementById('importFile').click()" class="btn-secondary">⬆ Import Backup</button>
+                    </div>
+
+                    <div style="display:flex; gap:10px; margin-bottom:15px;">
+                        <input type="text" id="newIssueInput" placeholder="New Issue Name..." style="flex:1;">
+                        <button onclick="addNewIssue()" class="btn-primary">Add</button>
+                    </div>
+
+                    <ul id="issueManager" style="list-style:none; padding:0; max-height:200px; overflow-y:auto;"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-<h3>Intake Queue (Grouped by Date)</h3>
-<div id="stage0List"></div>
+<div id="exportSection" class="workflow-section hidden">
+    <h2>Final Review & Export</h2>
+    <p>Review your compiled data below before downloading the final report.</p>
+    
+    <div id="compiledScenesSection">
+        <h3>Compiled SCENES</h3>
+        <textarea id="compiledScenes" rows="10" oninput="syncManualEdits('SCENES')"></textarea>
+    </div>
 
-<hr>
-
- <!-- QA CONTENT -->
-<div id="qaSection" style="display:none;">
-
-<h3>Date:</h3>
-<input type="date" id="sceneDate">
-
-<h3>Type:</h3>
-<button onclick="setType('SCENES')" id="sceneBtn">SCENES</button>
-<button onclick="setType('TRAILER')" id="trailerBtn">TRAILER</button>
-
-<h3>Scene Code:</h3>
-<input type="text" id="sceneCode">
-
-<h3> Manage Issues
-    <button onclick="toggleIssueManager()" id="toggleBtn">
-        Show
-    </button>
-   
-</h3>
-
-<div id="issueManagerSection" style="display:none;">
-    <input type="text" id="newIssueInput" placeholder="New issue name">
-    <button onclick="addNewIssue()">Add</button><br><br>
-
-    <ul id="issueManager"></ul>
-     <button onclick="exportIssues()">Export Issues</button><br><br>
-    <label>
-    Import Issues:
-    <input type="file" id="importIssuesInput" accept=".json" onchange="importIssues(event)">
-</label>
+    <div id="compiledTrailersSection">
+        <h3>Compiled TRAILERS</h3>
+        <textarea id="compiledTrailers" rows="10" oninput="syncManualEdits('TRAILER')"></textarea>
+    </div>
+    
+    <div id="exportActions">
+        <button onclick="exportAllCompiled()" class="btn-primary" style="padding: 15px 30px;">
+            💾 Download Final Report (.txt)
+        </button>
+        <button onclick="restartWorkflow()" class="btn-secondary" style="margin-left: 20px;">
+            Reset All Data
+        </button>
+    </div>
 </div>
 
-<h3>Add Issue:</h3>
-<input type="text" id="searchInput" placeholder="Search issue..." oninput="filterIssues()">
-
-<ul id="searchResults"></ul>
-
-<h3>Selected Issues</h3>
-<ul id="selectedList"></ul>
-
-<button id="generateBtn" onclick="generateOutput()" disabled>Generate Output</button>
-<button onclick="clearInputs()">Clear Inputs</button>
-
-
-<p id="copyStatus" style="color: green;"></p>
-
-<h3>Output: <button onclick="exportAllCompiled()">Export All (Scenes + Trailer)</button>
-</h3>
-<pre id="output"></pre>
-
-<style>
-ul { list-style: none; padding: 0; }
-li { margin-bottom: 6px; }
-.issue-item { cursor: pointer; color: #2b7cff; }
-.remove-btn { margin-left: 8px; color: red; cursor: pointer; }
-input.link-input { margin-left: 8px; }
-</style>
-
-<div id="compiledScenesSection">
-    <h3>Compiled Output – SCENES</h3>
-    <textarea id="compiledScenes"oninput="autoSaveEdited('SCENES')" rows="15" style="width:100%;"></textarea><br>
-    <button onclick="copyCompiled('SCENES')">Copy Scenes</button>
-    <button onclick="clearCompiled('SCENES')">Clear Scenes</button>
-</div>
-
-<div id="compiledTrailersSection" style="display:none;">
-    <h3>Compiled Output – TRAILER</h3>
-    <textarea id="compiledTrailers" oninput="autoSaveEdited('TRAILER')" rows="15" style="width:100%;"></textarea><br>
-    <button onclick="copyCompiled('TRAILER')">Copy Trailer</button>
-    <button onclick="clearCompiled('TRAILER')">Clear Trailer</button>
-</div>
-</div> 
-
-
-<!-- IMPORTANT: data file FIRST -->
 <script src="utils.js"></script>
 <script src="checkboxData.js"></script>
 <script src="stage0.js"></script>
 <script src="main.js"></script>
-
+<script src="workflow.js"></script>
 
 </body>
 </html>

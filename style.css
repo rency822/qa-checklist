@@ -1,0 +1,191 @@
+/* --- GLOBAL & THEME --- */
+body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: radial-gradient(circle at center, #555555, #121212);
+    color: #ffffff;
+    margin: 0;
+    padding-bottom: 50px;
+    min-height: 100vh;
+}
+
+/* --- UTILITIES --- */
+.hidden { display: none !important; }
+.flex-row { display: flex; gap: 20px; }
+.col-1 { flex: 1; }
+.col-2 { flex: 2; border-left: 1px solid #444; padding-left: 15px; }
+.text-success { color: #28a745 !important; }
+.code-font { font-family: monospace; font-size: 1.2em; }
+
+/* --- NAVIGATION --- */
+#workflowNav {
+    background: rgba(0, 0, 0, 0.8);
+    border-bottom: 1px solid #444;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    padding: 10px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.step { 
+    padding: 8px 15px; 
+    border-radius: 20px; 
+    opacity: 0.6; 
+    transition: 0.3s;
+}
+.step.active { 
+    opacity: 1; 
+    background: #28a745;
+    color: white; 
+    font-weight: bold;
+    box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+}
+
+/* --- SECTIONS --- */
+.workflow-section { 
+    padding: 20px; 
+    max-width: 1200px; 
+    margin: 0 auto;
+}
+
+.glass-panel {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid #444;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+/* --- FORMS & INPUTS --- */
+input[type="text"], input[type="date"], textarea, select {
+    background-color: #333;
+    color: white;
+    border: 1px solid #555;
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 14px;
+    width: 100%;
+    box-sizing: border-box; /* Fixes padding issues */
+}
+
+input:focus, textarea:focus {
+    outline: none;
+    border-color: #28a745;
+    background-color: #444;
+}
+
+/* --- BUTTONS --- */
+button {
+    cursor: pointer;
+    transition: 0.2s;
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: none;
+}
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-primary {
+    background: linear-gradient(145deg, #28a745, #218838);
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
+.btn-secondary {
+    color: #ccc;
+    background: none;
+    border: 1px solid #666;
+}
+.btn-danger {
+    color: white;
+    background: #ff4d4d;
+    padding: 4px 8px;
+    font-weight: bold;
+}
+.btn-link {
+    color: red;
+    background: none; 
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+/* --- DYNAMIC LIST ITEMS (Stage0 & Queue) --- */
+.queue-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 10px;
+    margin-bottom: 5px;
+    cursor: pointer;
+    background-color: #2a2a2a;
+    color: #fff;
+    border-bottom: 1px solid #444;
+    border: none;
+    border-radius: 4px;
+}
+.queue-item:hover {
+    background-color: #3a3a3a;
+    transform: translateX(5px);
+}
+
+.stage0-group h4 {
+    margin: 5px 0;
+    background: rgba(255,255,255,0.1);
+    padding: 8px;
+    border-radius: 4px;
+}
+.stage0-item {
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    padding: 8px; 
+    border-bottom: 1px solid #444; 
+    background: #2a2a2a;
+    margin-bottom: 5px;
+    border-radius: 4px;
+}
+.stage0-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+.checkbox-label {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    font-size: 0.9em;
+    color: #bbb;
+}
+
+/* --- ISSUE MANAGER & SELECTED LIST --- */
+.selected-item, .manager-item {
+    background-color: #2a2a2a;
+    color: #fff;
+    border-bottom: 1px solid #444;
+    margin-bottom: 5px;
+    padding: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.issue-manager-panel {
+    background: #2a2a2a;
+    padding: 15px;
+    border-radius: 5px;
+    margin-top: 10px;
+    border: 1px solid #444;
+}
+
+/* --- EXPORT SECTION --- */
+#exportActions {
+    margin-top: 20px;
+    border-top: 2px solid #444;
+    padding-top: 20px;
+}
