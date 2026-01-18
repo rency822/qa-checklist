@@ -7,6 +7,7 @@ function loadStage0() {
 }
 
 function saveStage0() {
+    localStorage.setItem("lastActivityTimestamp", new Date().getTime().toString());
     localStorage.setItem(STAGE0_KEY, JSON.stringify(stage0Scenes));
     if (typeof updateWorkflowUI === 'function') updateWorkflowUI();
 }

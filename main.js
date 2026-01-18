@@ -157,7 +157,9 @@ function generateOutput() {
     renderCompiledOutput();
 }
 
-function saveCompiled() { localStorage.setItem("compiledEntries", JSON.stringify(compiledEntries)); }
+function saveCompiled() { 
+    localStorage.setItem("lastActivityTimestamp", new Date().getTime().toString());
+    localStorage.setItem("compiledEntries", JSON.stringify(compiledEntries)); }
 
 // --- ISSUE MANAGER (RESTORED SECTION) ---
 
@@ -391,6 +393,11 @@ function syncManualEdits(type) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+    const wasCleared = checkDataExpiration();
+    if (wasCleared) {
+        if (typeof stage0Scenes !== 'undefined') stage0Scenes = {};
+        compiledEntries = { SCENES: {}, TRAILER: {} };
+    }
     renderCompiledOutput();
     updateGenerateButton();
     const dateInput = document.getElementById("sceneDate");
