@@ -24,10 +24,14 @@ function loadCompiled() {
 // --- QA LOGIC & STATE MANAGEMENT ---
 
 function selectForQA(code, data) {
+    if (typeof activeType !== 'undefined' && typeof syncManualEdits === 'function') {
+        syncManualEdits(activeType);
+    }
+
     const activeDisplay = document.getElementById("activeCodeDisplay");
     if (activeDisplay) {
         activeDisplay.textContent = code;
-        activeDisplay.style.color = ""; 
+        activeDisplay.classList.remove("text-success");
     }
 
     const codeInput = document.getElementById("sceneCode");
@@ -43,7 +47,7 @@ function selectForQA(code, data) {
     selectedIssues = [];
     renderSelected();
     updateGenerateButton();
-    renderCompiledOutput();
+    if (typeof renderCompiledOutput === 'function') renderCompiledOutput();
 }
 
 function updateGenerateButton() {
@@ -67,16 +71,30 @@ function filterIssues() {
         .forEach(item => {
             const li = document.createElement("li");
             li.textContent = item.label;
-            li.style.cursor = "pointer";
+            li.className = "queue-item"; // Use CSS class for consistent styling
+            li.style.padding = "5px";    // Small inline tweak
             li.onclick = () => addIssue(item);
             results.appendChild(li);
         });
 }
 
+
 function addIssue(item) {
+
     if (selectedIssues.find(i => i.label === item.label)) return;
-    selectedIssues.push({ ...item, link: "" });
-    
+    let needsInput = item.hasInput;
+
+    if (needsInput === undefined) {
+        const lowerLabel = item.label.toLowerCase();
+        needsInput = !lowerLabel.includes("good") && !lowerLabel.includes("n/a");
+    }
+
+    selectedIssues.push({ 
+        label: item.label, 
+        hasInput: needsInput, 
+        link: "" 
+    });
+
     const searchInput = document.getElementById("searchInput");
     if (searchInput) searchInput.value = "";
     const results = document.getElementById("searchResults");
@@ -85,7 +103,29 @@ function addIssue(item) {
     renderSelected();
     updateGenerateButton();
 }
+function addNewIssue() {
+    const input = document.getElementById("newIssueInput");
+    if (!input || !input.value.trim()) return;
 
+    const label = input.value.trim();
+    
+    // Check for duplicates
+    if (editableIssues.some(i => i.label.toLowerCase() === label.toLowerCase())) {
+        alert("Issue already exists!");
+        return;
+    }
+
+    // THE FIX: Always save as true. 
+    // Every new issue you create will now have a link/code box by default.
+    editableIssues.push({ 
+        label: label, 
+        hasInput: true 
+    });
+
+    localStorage.setItem(ISSUE_STORAGE_KEY, JSON.stringify(editableIssues));
+    input.value = "";
+    renderIssueManager();
+}
 function renderSelected() {
     const list = document.getElementById("selectedList");
     if (!list) return;
@@ -94,13 +134,22 @@ function renderSelected() {
     selectedIssues.forEach((item, index) => {
         const li = document.createElement("li");
         li.className = "selected-item";
+        
+        // This input will now appear for EVERYTHING
+        const inputHtml = item.hasInput ? `
+            <input type="text" 
+                   placeholder="Link / Code / Note" 
+                   value="${item.link || ''}" 
+                   oninput="updateLink(${index}, this.value)"
+                   style="width: 140px; display: inline-block; margin-left: 10px; padding: 4px;">
+        ` : "";
+
         li.innerHTML = `
-            ${item.label}
-            ${item.hasInput ? `
-                <input type="text" placeholder="Link Code" value="${item.link || ''}" 
-                       oninput="updateLink(${index}, this.value)">
-            ` : ""}
-            <span class="btn-link" onclick="removeIssue(${index})">✕</span>
+            <span>${item.label}</span>
+            <div style="display:flex; align-items:center;">
+                ${inputHtml}
+                <span class="btn-link" onclick="removeIssue(${index})" style="margin-left:15px; font-size:1.2em;">✕</span>
+            </div>
         `;
         list.appendChild(li);
     });
@@ -158,10 +207,11 @@ function generateOutput() {
 }
 
 function saveCompiled() { 
+    localStorage.setItem("compiledEntries", JSON.stringify(compiledEntries)); 
     localStorage.setItem("lastActivityTimestamp", new Date().getTime().toString());
-    localStorage.setItem("compiledEntries", JSON.stringify(compiledEntries)); }
+}
 
-// --- ISSUE MANAGER (RESTORED SECTION) ---
+// --- ISSUE MANAGER ---
 
 function toggleIssueManager() {
     const section = document.getElementById("issueManagerSection");
@@ -185,7 +235,7 @@ function renderIssueManager() {
 
     editableIssues.forEach((issue, index) => {
         const li = document.createElement("li");
-        li.className = "manager-item"; 
+        li.className = "manager-item"; // CSS Class
         li.innerHTML = `
             <span>${issue.label}</span>
             <button onclick="deleteDatabaseIssue(${index})" class="btn-link">Delete</button>
@@ -194,20 +244,24 @@ function renderIssueManager() {
     });
 }
 
-function addNewIssue() {
-    const input = document.getElementById("newIssueInput");
-    if (!input || !input.value.trim()) return;
+function addIssue(item) {
+    if (selectedIssues.find(i => i.label === item.label)) return;
 
-    const label = input.value.trim();
-    if (editableIssues.some(i => i.label.toLowerCase() === label.toLowerCase())) {
-        alert("Issue already exists!");
-        return;
-    }
+    const forceInput = true;
 
-    editableIssues.push({ label, hasInput: label.toLowerCase().includes("link") });
-    localStorage.setItem(ISSUE_STORAGE_KEY, JSON.stringify(editableIssues));
-    input.value = "";
-    renderIssueManager();
+    selectedIssues.push({ 
+        label: item.label, 
+        hasInput: forceInput, 
+        link: "" 
+    });
+    
+    const searchInput = document.getElementById("searchInput");
+    if (searchInput) searchInput.value = "";
+    const results = document.getElementById("searchResults");
+    if (results) results.innerHTML = "";
+
+    renderSelected();
+    updateGenerateButton();
 }
 
 function deleteDatabaseIssue(index) {
@@ -244,7 +298,42 @@ function importIssues(event) {
     reader.readAsText(file);
 }
 
-// --- RENDERING TEXT AREAS ---
+// --- SYNC & RENDER ---
+
+function syncManualEdits(type) {
+    const textareaId = type === "SCENES" ? "compiledScenes" : "compiledTrailers";
+    const el = document.getElementById(textareaId);
+    if (!el) return;
+
+    const raw = el.value.trim();
+    if (!raw) {
+        compiledEntries[type] = {};
+        saveCompiled();
+        return;
+    }
+
+    const lines = raw.split("\n");
+    let currentDate = null;
+    let currentBlocks = [];
+    const updatedData = {};
+
+    lines.forEach(line => {
+        line = line.trim();
+        if (/^\d{1,2}-\d{1,2}-\d{4}$/.test(line)) {
+            if (currentDate && currentBlocks.length) updatedData[currentDate] = [...currentBlocks];
+            currentDate = line;
+            currentBlocks = [];
+            return;
+        }
+        if (!line || line.startsWith("---") || line.startsWith("===")) return;
+        if (!line.startsWith("-")) currentBlocks.push(line);
+        else if (currentBlocks.length) currentBlocks[currentBlocks.length - 1] += "\n" + line;
+    });
+
+    if (currentDate && currentBlocks.length) updatedData[currentDate] = [...currentBlocks];
+    compiledEntries[type] = updatedData;
+    saveCompiled();
+}
 
 function renderCompiledOutput() {
     const stage = (typeof currentStage !== 'undefined') ? currentStage : 1;
@@ -259,30 +348,25 @@ function renderCompiledOutput() {
 function renderByType(type) {
     const textareaId = type === "SCENES" ? "compiledScenes" : "compiledTrailers";
     const el = document.getElementById(textareaId);
-    
     if (!el) return; 
 
     const data = compiledEntries[type];
-
-    // UPDATED: Explicitly sort by Year, then Month, then Day (Ascending)
+    
+    // Sort Ascending (Oldest First)
     const sortedDates = Object.keys(data).sort((a, b) => {
         const [am, ad, ay] = a.split("-").map(Number);
         const [bm, bd, by] = b.split("-").map(Number);
-        
-        if (ay !== by) return ay - by; // Lower year first
-        if (am !== bm) return am - bm; // Lower month first
-        return ad - bd;               // Lower day first
+        if (ay !== by) return ay - by;
+        if (am !== bm) return am - bm;
+        return ad - bd;
     });
 
     let fullText = "";
     sortedDates.forEach(date => {
-        fullText += date + "\n" + "---" + "\n";
-        data[date].forEach(block => {
-            fullText += block + "\n\n";
-        });
+        fullText += `${date}\n---\n`;
+        data[date].forEach(block => { fullText += `${block}\n\n`; });
         fullText += "===\n\n";
     });
-
     el.value = fullText.trim();
 }
 
@@ -319,85 +403,35 @@ function exportAllCompiled() {
 function buildExportBlock(type) {
     const data = compiledEntries[type] || {};
     let result = "";
-
-    // Explicitly sort by Year, then Month, then Day (Ascending)
-    Object.keys(data)
-        .sort((a, b) => {
-            const [am, ad, ay] = a.split("-").map(Number);
-            const [bm, bd, by] = b.split("-").map(Number);
-            
-            if (ay !== by) return ay - by; // Lower year first
-            if (am !== bm) return am - bm; // Lower month first
-            return ad - bd;               // Lower day first
-        })
-        .forEach(date => {
-            result += `${date}\n----------------\n${data[date].join("\n\n")}\n\n================\n\n`;
-        });
-
+    Object.keys(data).sort((a, b) => {
+        const [am, ad, ay] = a.split("-").map(Number);
+        const [bm, bd, by] = b.split("-").map(Number);
+        if (ay !== by) return ay - by;
+        if (am !== bm) return am - bm;
+        return ad - bd;
+    }).forEach(date => {
+        result += `${date}\n----------------\n${data[date].join("\n\n")}\n\n================\n\n`;
+    });
     return result.trimEnd();
 }
 
-// Function to sync manual edits from the Textarea back to LocalStorage
-function syncManualEdits(type) {
-    const textareaId = type === "SCENES" ? "compiledScenes" : "compiledTrailers";
-    const el = document.getElementById(textareaId);
-    if (!el) return;
-
-    const raw = el.value.trim();
-    if (!raw) {
-        compiledEntries[type] = {};
-        saveCompiled();
-        return;
+function fullSystemReset() {
+    if(confirm("This will delete your entire Issue Database AND all work. Are you sure?")) {
+        localStorage.clear();
+        location.reload();
     }
-
-    const lines = raw.split("\n");
-    let currentDate = null;
-    let currentBlocks = [];
-
-    // Temporary storage to rebuild the object
-    const updatedData = {};
-
-    lines.forEach(line => {
-        line = line.trim();
-
-        // Detect Date Headers (MM-DD-YYYY)
-        if (/^\d{2}-\d{2}-\d{4}$/.test(line)) {
-            if (currentDate && currentBlocks.length) {
-                updatedData[currentDate] = [...currentBlocks];
-            }
-            currentDate = line;
-            currentBlocks = [];
-            return;
-        }
-
-        // Ignore separators
-        if (!line || line.startsWith("---") || line.startsWith("===")) return;
-
-        // Detect Scene Code vs Issues
-        if (!line.startsWith("-")) {
-            currentBlocks.push(line);
-        } else if (currentBlocks.length > 0) {
-            // Append the issue to the last scene code block
-            currentBlocks[currentBlocks.length - 1] += "\n" + line;
-        }
-    });
-
-    // Push the final group
-    if (currentDate && currentBlocks.length) {
-        updatedData[currentDate] = [...currentBlocks];
-    }
-
-    // Update global state and save
-    compiledEntries[type] = updatedData;
-    saveCompiled();
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    const wasCleared = checkDataExpiration();
-    if (wasCleared) {
-        if (typeof stage0Scenes !== 'undefined') stage0Scenes = {};
-        compiledEntries = { SCENES: {}, TRAILER: {} };
+    // Check Expiration (from utils.js)
+    if (typeof checkDataExpiration === 'function') {
+        const wasCleared = checkDataExpiration();
+        if (wasCleared) {
+            if (typeof stage0Scenes !== 'undefined') stage0Scenes = {};
+            compiledEntries = { SCENES: {}, TRAILER: {} };
+        }
     }
+
     renderCompiledOutput();
     updateGenerateButton();
     const dateInput = document.getElementById("sceneDate");
