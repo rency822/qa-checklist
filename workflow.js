@@ -81,11 +81,17 @@ function renderQueue() {
     if (typeof stage0Scenes === 'undefined') return;
 
     Object.entries(stage0Scenes).forEach(([code, data]) => {
-        if (currentStage === 2 && !data.hasTrailer) return;
+        
+        if (currentStage === 1 && data.isTrailerOnly) return;
+
+        if (currentStage === 2 && !data.hasTrailer && !data.isTrailerOnly) return;
 
         const btn = document.createElement("button");
-        btn.className = "queue-item"; // Uses CSS class now
-        btn.innerHTML = `<strong>${code}</strong><br><small>${data.date}</small>`;
+        btn.className = "queue-item";
+        
+        const tag = data.isTrailerOnly ? '<span style="color:#FFA500; font-size:0.8em; float:right;">(Trailer Only)</span>' : '';
+        
+        btn.innerHTML = `<strong>${code}</strong> ${tag}<br><small>${data.date}</small>`;
         btn.onclick = () => selectForQA(code, data);
         list.appendChild(btn);
     });

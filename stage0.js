@@ -7,7 +7,6 @@ function loadStage0() {
 }
 
 function saveStage0() {
-    localStorage.setItem("lastActivityTimestamp", new Date().getTime().toString());
     localStorage.setItem(STAGE0_KEY, JSON.stringify(stage0Scenes));
     if (typeof updateWorkflowUI === 'function') updateWorkflowUI();
 }
@@ -28,6 +27,7 @@ function stage0AddBulk() {
             stage0Scenes[trimmed] = {
                 date: formattedDate,
                 hasTrailer: false,
+                isTrailerOnly: false, // NEW FLAG
                 processed: false 
             };
         }
@@ -62,20 +62,31 @@ function renderStage0() {
             const li = document.createElement("li");
             li.className = "stage0-item";
 
+            // CHECKBOX LOGIC:
+            // "Has Trailer" = Scene QA + Trailer QA
+            // "Trailer Only" = Skip Scene QA + Trailer QA Only
+            
             li.innerHTML = `
-                <strong style="font-size: 1.1em;">${item.code}</strong>
+                <strong style="font-size: 1.1em; width: 150px;">${item.code}</strong>
 
                 <div class="stage0-controls">
-                    <label class="checkbox-label">
+                    <label class="checkbox-label" title="Item has both Scene and Trailer">
                         <input type="checkbox" ${item.hasTrailer ? 'checked' : ''} 
                                onchange="stage0SetTrailer('${item.code}', this.checked)"
                                style="margin-right: 5px; transform: scale(1.2);">
-                        Has Trailer
+                        + Trailer
+                    </label>
+
+                    <label class="checkbox-label" title="Item is ONLY a Trailer (Skip Scene QA)">
+                        <input type="checkbox" ${item.isTrailerOnly ? 'checked' : ''} 
+                               onchange="stage0SetTrailerOnly('${item.code}', this.checked)"
+                               style="margin-right: 5px; transform: scale(1.2); margin-left: 10px;">
+                        Trailer Only
                     </label>
 
                     <button onclick="deleteFromIntake('${item.code}')" 
                             title="Remove Scene"
-                            class="btn-danger">
+                            class="btn-danger" style="margin-left: 15px;">
                         ✕
                     </button>
                 </div>
@@ -92,7 +103,16 @@ function deleteFromIntake(code) {
     saveStage0();
     renderStage0();
 }
+
+// MUTUAL EXCLUSIVITY LOGIC
 function stage0SetTrailer(code, checked) {
     stage0Scenes[code].hasTrailer = checked;
+    if (checked) stage0Scenes[code].isTrailerOnly = false; // Uncheck "Trailer Only"
+    saveStage0();
+}
+
+function stage0SetTrailerOnly(code, checked) {
+    stage0Scenes[code].isTrailerOnly = checked;
+    if (checked) stage0Scenes[code].hasTrailer = false; // Uncheck "Has Trailer"
     saveStage0();
 }
