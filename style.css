@@ -1,5 +1,5 @@
 /* --- GLOBAL & THEME --- */
-body { 
+body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: radial-gradient(circle at center, #555555, #121212);
     color: #ffffff;
@@ -30,24 +30,24 @@ body {
     z-index: 100;
 }
 
-.step { 
-    padding: 8px 15px; 
-    border-radius: 20px; 
-    opacity: 0.6; 
+.step {
+    padding: 8px 15px;
+    border-radius: 20px;
+    opacity: 0.6;
     transition: 0.3s;
 }
-.step.active { 
-    opacity: 1; 
+.step.active {
+    opacity: 1;
     background: #28a745;
-    color: white; 
+    color: white;
     font-weight: bold;
     box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
 }
 
 /* --- SECTIONS --- */
-.workflow-section { 
-    padding: 20px; 
-    max-width: 1200px; 
+.workflow-section {
+    padding: 20px;
+    max-width: 1200px;
     margin: 0 auto;
 }
 
@@ -110,7 +110,7 @@ button:disabled {
 }
 .btn-link {
     color: red;
-    background: none; 
+    background: none;
     cursor: pointer;
     margin-left: 10px;
 }
@@ -141,11 +141,11 @@ button:disabled {
     border-radius: 4px;
 }
 .stage0-item {
-    display: flex; 
-    align-items: center; 
-    justify-content: space-between; 
-    padding: 8px; 
-    border-bottom: 1px solid #444; 
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px;
+    border-bottom: 1px solid #444;
     background: #2a2a2a;
     margin-bottom: 5px;
     border-radius: 4px;
@@ -162,6 +162,38 @@ button:disabled {
     font-size: 0.9em;
     color: #bbb;
 }
+
+/* --- SHEET PASTE: HINTS, SUMMARY, BADGES --- */
+.hint {
+    display: block;
+    color: #aaa;
+    font-size: 0.85em;
+    margin: 4px 0 8px;
+}
+.intake-summary {
+    margin-top: 12px;
+    padding: 10px;
+    border-radius: 4px;
+    background: rgba(40, 167, 69, 0.15);
+    border: 1px solid #28a745;
+    font-size: 0.9em;
+}
+.intake-summary details { margin-top: 6px; color: #ccc; }
+.intake-summary ul { margin: 6px 0 0; padding-left: 20px; }
+.intake-summary .warn { margin-top: 6px; color: #ffb84d; }
+
+.badge {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.75em;
+    font-weight: bold;
+    vertical-align: middle;
+}
+.badge-scene        { background: #3a3a3a; color: #ccc; border: 1px solid #666; }
+.badge-both         { background: #1f6f3a; color: #fff; }
+.badge-trailer-only { background: #e07b2a; color: #fff; }
 
 /* --- ISSUE MANAGER & SELECTED LIST --- */
 .selected-item, .manager-item {

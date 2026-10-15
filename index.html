@@ -18,17 +18,20 @@
     <div class="glass-panel">
         <label>Set Date for Batch:</label>
         <input type="date" id="bulkStage0Date" style="margin-bottom: 10px;">
+        <small class="hint">Only needed for a plain list of codes. When you paste sheet rows, the date comes from the DATE column.</small>
         <br>
-        <textarea id="stage0Input" rows="5" placeholder="Paste codes here..."></textarea>
+        <textarea id="stage0Input" rows="5" placeholder="Paste codes (one per line) OR copy rows straight from the sheet (columns A–R)..."></textarea>
+        <small class="hint">Sheet rows are sorted by UPLOAD + SERVER and TRAILER: <b>To Test</b> = scene QA, <b>To Review</b> = trailer QA. Rows where only the trailer is ready become <b>Trailer only</b>.</small>
         <br><br>
         <button onclick="stage0AddBulk()" class="btn-primary">Add Batch</button>
+        <div id="intakeSummary" class="intake-summary hidden"></div>
     </div>
     <div id="stage0List"></div>
 </div>
 
 <div id="qaSection" class="workflow-section hidden">
     <h2 id="qaHeader">QA Mode</h2>
-    
+
     <div class="flex-row">
         <div class="col-1">
             <h3>Current Queue</h3>
@@ -37,19 +40,19 @@
 
         <div class="col-2">
             <div class="glass-panel">
-                <strong>Active Code:</strong> 
+                <strong>Active Code:</strong>
                 <span id="activeCodeDisplay" class="code-font">None</span>
                 <input type="hidden" id="sceneCode">
                 <input type="hidden" id="sceneDate">
             </div>
-            
+
             <h3>Add Issue:</h3>
             <input type="text" id="searchInput" placeholder="Search issue..." oninput="filterIssues()">
             <ul id="searchResults"></ul>
-            
+
             <h3>Selected Issues</h3>
             <ul id="selectedList"></ul>
-            
+
             <button id="generateBtn" onclick="generateOutput()" class="btn-primary" disabled>Generate Output</button>
             <button onclick="clearInputs()" class="btn-secondary">Clear</button>
 
@@ -81,7 +84,7 @@
 <div id="exportSection" class="workflow-section hidden">
     <h2>Final Review & Export</h2>
     <p>Review your compiled data below before downloading the final report.</p>
-    
+
     <div id="compiledScenesSection">
         <h3>Compiled SCENES</h3>
         <textarea id="compiledScenes" rows="10" oninput="syncManualEdits('SCENES')"></textarea>
@@ -91,7 +94,7 @@
         <h3>Compiled TRAILERS</h3>
         <textarea id="compiledTrailers" rows="10" oninput="syncManualEdits('TRAILER')"></textarea>
     </div>
-    
+
     <div id="exportActions">
         <button onclick="exportAllCompiled()" class="btn-primary" style="padding: 15px 30px;">
             💾 Download Final Report (.txt)
