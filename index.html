@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-   <link rel="stylesheet" href="style.css">
+   <meta charset="UTF-8">
+   <title>QA Tool</title>
+   <link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
 
@@ -105,11 +107,13 @@
     </div>
 </div>
 
-<script src="utils.js"></script>
-<script src="checkboxData.js"></script>
-<script src="stage0.js"></script>
-<script src="main.js"></script>
-<script src="workflow.js"></script>
+<!-- ?v=3 makes the browser load the latest files instead of cached copies.
+     Bump the number whenever you update a .js or .css file. -->
+<script src="utils.js?v=3"></script>
+<script src="checkboxData.js?v=3"></script>
+<script src="stage0.js?v=3"></script>
+<script src="main.js?v=3"></script>
+<script src="workflow.js?v=3"></script>
 
 </body>
 </html>
