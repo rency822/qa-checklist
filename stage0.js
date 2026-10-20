@@ -292,7 +292,7 @@ function renderStage0() {
     Object.keys(grouped).forEach(date => {
         const div = document.createElement("div");
         div.className = "stage0-group";
-        div.innerHTML = `<h4>� ${date}</h4>`;
+        div.innerHTML = `<h4>📅 ${date}</h4>`;
 
         const ul = document.createElement("ul");
         ul.style.listStyle = "none";
@@ -312,17 +312,17 @@ function renderStage0() {
 
                 <div class="stage0-controls">
                     <label class="checkbox-label">
-                        <input type="checkbox" ${item.hasTrailer ? 'checked' : ''}
-                               onchange="stage0SetTrailer('${jsCode}', this.checked)"
+                        <input type="checkbox" ${!item.trailerOnly ? 'checked' : ''}
+                               onchange="stage0SetScene('${jsCode}', this.checked)"
                                style="margin-right: 5px; transform: scale(1.2);">
-                        Has Trailer
+                        Scene
                     </label>
 
                     <label class="checkbox-label">
-                        <input type="checkbox" ${item.trailerOnly ? 'checked' : ''}
-                               onchange="stage0SetTrailerOnly('${jsCode}', this.checked)"
+                        <input type="checkbox" ${item.hasTrailer ? 'checked' : ''}
+                               onchange="stage0SetTrailer('${jsCode}', this.checked)"
                                style="margin-right: 5px; transform: scale(1.2);">
-                        Trailer Only
+                        Trailer
                     </label>
 
                     <button onclick="deleteFromIntake('${jsCode}')"
@@ -347,16 +347,28 @@ function deleteFromIntake(code) {
     renderStage0();
 }
 
-function stage0SetTrailer(code, checked) {
-    stage0Scenes[code].hasTrailer = checked;
-    if (!checked) stage0Scenes[code].trailerOnly = false; // can't be trailer-only without a trailer
+// Scene box: ticked = scene goes to QA Scenes. Unticked = trailer only.
+function stage0SetScene(code, checked) {
+    const item = stage0Scenes[code];
+    if (!checked && !item.hasTrailer) {
+        alert("Keep at least Scene or Trailer ticked (or remove the row with ✕).");
+        renderStage0();
+        return;
+    }
+    item.trailerOnly = !checked;
     saveStage0();
     renderStage0();
 }
 
-function stage0SetTrailerOnly(code, checked) {
-    stage0Scenes[code].trailerOnly = checked;
-    if (checked) stage0Scenes[code].hasTrailer = true;
+// Trailer box: ticked = goes to QA Trailers.
+function stage0SetTrailer(code, checked) {
+    const item = stage0Scenes[code];
+    if (!checked && item.trailerOnly) {
+        alert("Keep at least Scene or Trailer ticked (or remove the row with ✕).");
+        renderStage0();
+        return;
+    }
+    item.hasTrailer = checked;
     saveStage0();
     renderStage0();
 }
