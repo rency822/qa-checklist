@@ -292,7 +292,7 @@ function renderStage0() {
     Object.keys(grouped).forEach(date => {
         const div = document.createElement("div");
         div.className = "stage0-group";
-        div.innerHTML = `<h4>📅 ${date}</h4>`;
+        div.innerHTML = `<h4>� ${date}</h4>`;
 
         const ul = document.createElement("ul");
         ul.style.listStyle = "none";
